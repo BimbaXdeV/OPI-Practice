@@ -1,3 +1,8 @@
+---
+layout: default
+title: SRS Project Garden
+---
+
 # SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
 ## Специфікація вимог до програмного забезпечення
 
