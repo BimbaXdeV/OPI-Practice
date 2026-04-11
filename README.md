@@ -13,6 +13,7 @@
 
 ### Крок 3. Діаграма прецедентів (Use Case Diagram)
 
+
 ```mermaid
 flowchart LR
     User((Користувач))
@@ -34,7 +35,10 @@ flowchart LR
     Server --> UC2
     
     UC4 -. "<<include>>" .-> UC5
+```
+### Крок 4. Діаграма класів (Class Diagram)
 
+```meramid
 classDiagram
     class UserModel {
         +UUID userId
@@ -72,6 +76,10 @@ classDiagram
     UserModel "1" -- "*" MediaMessage : відправляє
     UserModel "2" -- "*" StreakSession : підтримують
     UserModel "1" -- "1" DynamicConfig : має налаштування
+```
+### Крок 5. Діаграма послідовності (Sequence Diagram)
+
+```meramid
 sequenceDiagram
     actor U as Користувач
     participant UI as Клієнт (UI)
@@ -103,3 +111,12 @@ sequenceDiagram
     UI-->>U: Стрік подовжено!
     deactivate UI
 ```
+
+### Крок 6. Матриця трасовності
+ID вимоги,Задачі в Jira,Прецедент (Use Case),Задіяні класи (OPT-5),Діаграма послідовності
+FR-01,"OPT-3, OPT-4","Вікно реєстрації, Верифікація",UserModel,Ні
+FR-02,OPT-11,Зовнішній вид профілю,UserModel,Ні
+FR-03,"OPT-7, OPT-8",Надіслати фото-стрік,MediaMessage,Так (OPT-7)
+FR-04,OPT-5,Усі (Основа системи),"StreakSession, UserModel",Так (DB збереження)
+FR-05,"OPT-13, OPT-14",Оновити віджет на екрані,DynamicConfig,Ні
+
