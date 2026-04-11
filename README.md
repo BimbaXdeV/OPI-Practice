@@ -1,43 +1,40 @@
 # Лабораторна робота: Проєктування архітектури застосунку
 
 ### Крок 1. Опис проєкту
-**Назва проєкту:** "Streaker" 
-**Опис:** Мобільний клієнт-серверний застосунок для Android, націлений на підтримання щоденного спілкування між близькими людьми (формат "стріків") за допомогою обміну фотографіями через віджет на головному екрані.
+**Назва проєкту:** "Garden" 
+**Опис:** Мобільний застосунок для підтримки особистих стосунків з рідними та близькими людьми. Головна метафора застосунку — віртуальний «Сад», де кожна окрема рослина відповідає одному контакту. Застосунок вирішує проблему підтримки зв'язків без тиску та шеймінгу.
 
 ### Крок 2. Функціональні вимоги
-* **FR-01 (Реєстрація):** Система повинна надавати інтерфейс для реєстрації користувача та проводити його верифікацію (задачі OPT-3, OPT-4).
-* **FR-02 (Профіль):** Користувач повинен мати можливість налаштувати зовнішній вигляд свого профілю (задача OPT-11).
-* **FR-03 (Мережева комунікація):** Система повинна передавати медіафайли між клієнтом та сервером за визначеним мережевим протоколом (задача OPT-7).
-* **FR-04 (База даних):** Серверна частина повинна зберігати користувачів, повідомлення та стан "стріків" у реляційній базі даних (задача OPT-5).
-* **FR-05 (Динамічна конфігурація):** Система повинна автоматично оновлювати стан віджета з використанням анімацій при надходженні нових даних (задачі OPT-13, OPT-14).
+*Вимоги базуються на специфікації (SRS) та беклогу Jira.*
+* **FR-01 (Реєстрація):** Система дозволяє реєстрацію через електронну пошту та пароль (задачі OPT-3, OPT-4).
+* **FR-02 (Контакти та БД):** Користувач може додавати контакти, які зберігаються у локальній базі даних пристрою (задача OPT-5, обмеження C-02).
+* **FR-03 (Сад та Анімації):** Застосунок відображає віртуальний «Сад», де рослина збільшується та стає яскравішою при регулярному спілкуванні (задачі OPT-13, OPT-14, вимога FR-05/FR-06).
+* **FR-04 (Нагадування):** Система надсилає не більше одного push-нагадування на добу на кожен контакт через FCM (задачі OPT-7, OPT-8).
+* **FR-05 (Відправка медіа):** Користувач може надіслати картинку контакту безпосередньо із застосунку (вимога FR-08).
 
 ### Крок 3. Діаграма прецедентів (Use Case Diagram)
 
-
 ```mermaid
 flowchart LR
-    User((Користувач))
-    Server((Сервер\nавторизації))
+    User((Зареєстрований\nкористувач))
+    FCM((Firebase\nCloud Messaging))
 
-    subgraph System [Додаток Streaker]
-        UC1([OPT-3: Вікно реєстрації])
-        UC2([OPT-4: Верифікація користувача])
-        UC3([OPT-11: Зовнішній вид профілю])
-        UC4([Надіслати фото-стрік])
-        UC5([Оновити віджет на екрані])
+    style System fill:transparent,stroke:#666,stroke-width:2px,stroke-dasharray: 5 5
+    subgraph System [Додаток Garden]
+        UC1([OPT-3: Авторизація])
+        UC2([Додати/Редагувати контакт])
+        UC3([OPT-13: Перегляд Саду та рослин])
+        UC4([Відправити медіа контакту])
+        UC5([Отримати Push-нагадування])
     end
 
-    %% Робимо фон прозорим, але залишаємо рамку системи
-    style System fill:transparent,stroke:#666,stroke-width:2px,stroke-dasharray: 5 5
-
     User --> UC1
+    User --> UC2
     User --> UC3
     User --> UC4
     
-    UC1 -. "<<include>>" .-> UC2
-    Server --> UC2
-    
-    UC4 -. "<<include>>" .-> UC5
+    UC4 -. "<<include>>" .-> UC3
+    FCM --> UC5
 ```
 ### Крок 4. Діаграма класів (Class Diagram)
 
@@ -45,89 +42,91 @@ flowchart LR
 classDiagram
     class UserModel {
         +UUID userId
-        +String phoneNumber
-        +Boolean isVerified
-        +OPT_4_VerifyUser() Boolean
+        +String email
+        +String passwordHash
+        +OPT_4_VerifyAccount() Boolean
         +OPT_11_UpdateProfile() void
     }
 
-    class MediaMessage {
-        +UUID messageId
-        +UUID senderId
-        +String imageUrl
-        +DateTime timestamp
-        +OPT_7_NetworkSend() Boolean
+    class Contact {
+        +UUID contactId
+        +String name
+        +int reminderFrequencyDays
+        +saveToLocalDB() void
     }
 
-    class StreakSession {
-        +UUID sessionId
-        +UUID user1_Id
-        +UUID user2_Id
-        +int currentDays
-        +DateTime lastInteraction
-        +incrementStreak() void
-        +resetStreak() void
+    class VirtualPlant {
+        +UUID plantId
+        +int growthLevel
+        +DateTime lastWatering
+        +OPT_13_AnimateGrowth() void
+        +witherPlant() void
     }
 
-    class DynamicConfig {
-        +String animationType
-        +String themeColor
-        +OPT_14_ApplyConfig() void
-        +OPT_13_PlayAnimation() void
+    class LocalDatabase {
+        +OPT_5_InitRoomDB() void
+        +insertContact(Contact c)
+        +updatePlantState(VirtualPlant p)
     }
 
-    class NotificationService {
-        +String pushToken
-        +sendStreakWarning(UUID userId) void
-        +notifyNewMessage(UUID receiverId) void
+    class NotificationManager {
+        +String fcmToken
+        +OPT_7_SchedulePush() void
+        +checkIfReminderNeeded(Contact c) Boolean
     }
 
-    UserModel "1" -- "*" MediaMessage : відправляє
-    UserModel "2" -- "*" StreakSession : підтримують
-    UserModel "1" -- "1" DynamicConfig : має налаштування
-    UserModel "1" -- "1" NotificationService : отримує сповіщення
+    UserModel "1" -- "*" Contact : має
+    Contact "1" -- "1" VirtualPlant : відповідає за
+    VirtualPlant "*" -- "1" LocalDatabase : зберігається в
+    Contact "1" ..> "1" NotificationManager : ініціює нагадування
 ```
 ### Крок 5. Діаграма послідовності (Sequence Diagram)
 
 ```mermaid
 sequenceDiagram
     actor U as Користувач
-    participant UI as Клієнт (UI)
-    participant Net as OPT-7 Мережевий Протокол
-    participant Srv as OPT-8 Сервер (Бекенд)
-    participant DB as OPT-5 База Даних
+    participant UI as Екран Саду (UI)
+    participant DB as OPT-5 Локальна БД (Room)
+    participant Net as OPT-7 Мережевий клієнт
 
-    U->>UI: Робить фото для стріку
+    U->>UI: Відправляє фото контакту
     activate UI
-    UI->>UI: OPT-13 Відтворення анімації
-    UI->>Net: sendMedia(userId, file)
+    UI->>Net: sendMediaMessage(contactId, photo)
     activate Net
-    Net->>Srv: POST /api/v1/streak/media
-    activate Srv
-    
-    Srv->>DB: saveMessage(file_url, timestamp)
-    activate DB
-    DB-->>Srv: success (messageId)
-    
-    Srv->>DB: checkStreakStatus(userId)
-    DB-->>Srv: streak_updated
-    deactivate DB
-    
-    Srv-->>Net: 200 OK (упішно надіслано)
-    deactivate Srv
-    Net-->>UI: Відобразити статус доставки
+    Net-->>UI: success
     deactivate Net
     
-    UI-->>U: Стрік подовжено!
+    UI->>DB: updateInteractionHistory(contactId, NOW)
+    activate DB
+    DB->>DB: calculateNewPlantLevel()
+    DB-->>UI: new_growth_level
+    deactivate DB
+    
+    UI->>UI: OPT-13 Анімація росту рослини
+    UI-->>U: Рослина оновилася!
     deactivate UI
 ```
+### Матриця відстежуваності (SRS)
+
+| Вимога | Джерело | Тест-критерій |
+| :--- | :--- | :--- |
+| **FR-01** | «Чи обов'язкова реєстрація...?» | Успішна реєстрація нового email + вхід |
+| **FR-02** | «Які функції повинна мати програма?» | Додавання контакту без номера телефону |
+| **FR-03** | «Індивідуальний підхід до контактів» | Різна частота нагадувань для двох контактів |
+| **FR-04** | «Що таке неагресивне нагадування?» | Не більше 1 push за 24 год на контакт |
+| **FR-05, 06, 07** | «Чому обрати саме ваш продукт?» | Рослина росте після взаємодії; в'яне після N днів |
+| **FR-08** | «Які функції повинна мати програма?» | Успішна відправка тестової картинки |
+| **FR-09** | «Які функції повинна мати програма?» | Видалення контакту — рослина зникає з саду |
+| **FR-10** | «Які функції повинна мати програма?» | Повідомлення відображається в історії контакту |
+| **NFR-P-01** | «Яке допустиме time-to-response?» | JMeter: 95% запитів < 1.5 с |
+| **NFR-SC-01** | «Яке навантаження на сервери?» | JMeter/Gatling: імітація 500 000 підключень |
 
 ### Крок 6. Матриця трасовності
 
-| ID вимоги | Задачі в Jira | Прецедент (Use Case) | Задіяні класи (OPT-5) | Діаграма послідовності |
+| ID вимоги | Задачі в Jira | Прецедент (Use Case) | Задіяні класи | Діаграма послідовності |
 | :--- | :--- | :--- | :--- | :--- |
-| **FR-01** | OPT-3, OPT-4 | Вікно реєстрації, Верифікація | `UserModel` | Ні |
-| **FR-02** | OPT-11 | Зовнішній вид профілю | `UserModel` | Ні |
-| **FR-03** | OPT-7, OPT-8 | Надіслати фото-стрік | `MediaMessage` | **Так (OPT-7)** |
-| **FR-04** | OPT-5 | Усі (Основа системи) | `StreakSession`, `UserModel` | **Так (DB збереження)** |
-| **FR-05** | OPT-13, OPT-14 | Оновити віджет на екрані | `DynamicConfig` | Ні |
+| **FR-01** | OPT-3, OPT-4 | Авторизація | `UserModel` | Ні |
+| **FR-02** | OPT-5 | Додати/Редагувати контакт | `Contact`, `LocalDatabase` | Ні |
+| **FR-03** | OPT-13, OPT-14 | Перегляд Саду та рослин | `VirtualPlant` | **Так** |
+| **FR-04** | OPT-7, OPT-8 | Отримати Push-нагадування | `NotificationManager` | Ні |
+| **FR-05** | OPT-7 | Відправити медіа контакту | `Contact`, `LocalDatabase` | **Так** |
