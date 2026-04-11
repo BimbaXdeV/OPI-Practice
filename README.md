@@ -38,7 +38,7 @@ flowchart LR
 ```
 ### Крок 4. Діаграма класів (Class Diagram)
 
-```meramid
+```mermaid
 classDiagram
     class UserModel {
         +UUID userId
@@ -79,7 +79,7 @@ classDiagram
 ```
 ### Крок 5. Діаграма послідовності (Sequence Diagram)
 
-```meramid
+```mermaid
 sequenceDiagram
     actor U as Користувач
     participant UI as Клієнт (UI)
