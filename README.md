@@ -27,6 +27,9 @@ flowchart LR
         UC5([Оновити віджет на екрані])
     end
 
+    %% Робимо фон прозорим, але залишаємо рамку системи
+    style System fill:transparent,stroke:#666,stroke-width:2px,stroke-dasharray: 5 5
+
     User --> UC1
     User --> UC3
     User --> UC4
