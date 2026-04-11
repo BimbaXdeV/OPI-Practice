@@ -73,9 +73,16 @@ classDiagram
         +OPT_13_PlayAnimation() void
     }
 
+    class NotificationService {
+        +String pushToken
+        +sendStreakWarning(UUID userId) void
+        +notifyNewMessage(UUID receiverId) void
+    }
+
     UserModel "1" -- "*" MediaMessage : відправляє
     UserModel "2" -- "*" StreakSession : підтримують
     UserModel "1" -- "1" DynamicConfig : має налаштування
+    UserModel "1" -- "1" NotificationService : отримує сповіщення
 ```
 ### Крок 5. Діаграма послідовності (Sequence Diagram)
 
