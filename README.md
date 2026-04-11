@@ -13,7 +13,6 @@
 
 ### Крок 3. Діаграма прецедентів (Use Case Diagram)
 
-
 ```mermaid
 flowchart LR
     User((Користувач))
@@ -35,43 +34,3 @@ flowchart LR
     Server --> UC2
     
     UC4 -. "<<include>>" .-> UC5
-```
-```mermaid
-classDiagram
-    class UserModel {
-        +UUID userId
-        +String phoneNumber
-        +Boolean isVerified
-        +OPT_4_VerifyUser() Boolean
-        +OPT_11_UpdateProfile() void
-    }
-
-    class MediaMessage {
-        +UUID messageId
-        +UUID senderId
-        +String imageUrl
-        +DateTime timestamp
-        +OPT_7_NetworkSend() Boolean
-    }
-
-    class StreakSession {
-        +UUID sessionId
-        +UUID user1_Id
-        +UUID user2_Id
-        +int currentDays
-        +DateTime lastInteraction
-        +incrementStreak() void
-        +resetStreak() void
-    }
-
-    class DynamicConfig {
-        +String animationType
-        +String themeColor
-        +OPT_14_ApplyConfig() void
-        +OPT_13_PlayAnimation() void
-    }
-
-    UserModel "1" -- "*" MediaMessage : відправляє
-    UserModel "2" -- "*" StreakSession : підтримують
-    UserModel "1" -- "1" DynamicConfig : має налаштування
-```
